@@ -1,6 +1,7 @@
 import type { NextConfig } from "next";
 
-module.exports = {
+const nextConfig: NextConfig = {
+  output: "standalone",
   async redirects() {
     return [
       {
@@ -10,10 +11,6 @@ module.exports = {
       },
     ];
   },
-};
-
-const nextConfig: NextConfig = {
-  /* config options here */
 };
 
 export default nextConfig;
