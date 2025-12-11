@@ -23,21 +23,24 @@ COPY . .
 
 RUN pnpm build
 
-FROM node:24-alpine AS runner
+FROM nginx:1.29.4-alpine AS runner
 
-RUN apk add --no-cache libc6-compat
+RUN apk add --no-cache nodejs libc6-compat supervisor
 
 ENV NODE_ENV=production
 ENV PORT=3000
+ENV HOSTNAME=0.0.0.0
 
 WORKDIR /app
 
-COPY --from=build --chown=node:node /app/public ./public
-COPY --from=build --chown=node:node /app/.next/standalone ./standalone
-COPY --from=build --chown=node:node /app/.next/static ./standalone/.next/static
+COPY --from=build --chown=nginx:nginx /app/public ./public
+COPY --from=build --chown=nginx:nginx /app/.next/standalone ./standalone
+COPY --from=build --chown=nginx:nginx /app/.next/static ./standalone/.next/static
 
-USER node
+COPY nginx/default.conf /etc/nginx/conf.d/default.conf
 
-EXPOSE 3000
+COPY nginx/supervisord.conf /etc/supervisord.conf
 
-CMD ["node", "standalone/server.js"]
+EXPOSE 80
+
+CMD ["/usr/bin/supervisord", "-c", "/etc/supervisord.conf"]
